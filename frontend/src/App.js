@@ -79,45 +79,53 @@ function App() {
   }, []);
 
   // Load data: localStorage first → fallback to static latest-report.json
-  useEffect(() => {
-    const loadData = async () => {
-      // Try localStorage first
-      const savedData = localStorage.getItem("coscoDashboardData");
-      const savedTimestamp = localStorage.getItem("coscoLastUpdated");
+// Load data: localStorage first → always fallback to static JSON if needed
+useEffect(() => {
+  const loadData = async () => {
+    let dataLoaded = false;
 
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          setSheets(parsed);
-          setActiveSheet(Object.keys(parsed)[0]);
-          setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
-          return;
-        } catch (e) {
-          console.error("Corrupted localStorage — falling back to static report");
-        }
+    // Try localStorage first
+    const savedData = localStorage.getItem("coscoDashboardData");
+    const savedTimestamp = localStorage.getItem("coscoLastUpdated");
+
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setSheets(parsed);
+        setActiveSheet(Object.keys(parsed)[0]);
+        setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+        dataLoaded = true;
+      } catch (e) {
+        console.error("Corrupted localStorage — clearing and falling back");
+        localStorage.removeItem("coscoDashboardData");
+        localStorage.removeItem("coscoLastUpdated");
       }
+    }
 
-      // Fallback to pre-loaded JSON
+    // Always fallback to static JSON if no valid local data
+    if (!dataLoaded) {
       try {
         const res = await fetch("/latest-report.json");
-        if (res.ok) {
-          const data = await res.json();
-          setSheets(data.sheets);
-          setActiveSheet(Object.keys(data.sheets)[0]);
-          const timestamp = data.lastUpdated || new Date().toISOString();
-          setLastUpdated(new Date(timestamp));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
 
-          // Cache for faster loads
-          localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
-          localStorage.setItem("coscoLastUpdated", timestamp);
-        }
+        setSheets(data.sheets);
+        setActiveSheet(Object.keys(data.sheets)[0]);
+        const timestamp = data.lastUpdated || new Date().toISOString();
+        setLastUpdated(new Date(timestamp));
+
+        // Cache it for next visits
+        localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
+        localStorage.setItem("coscoLastUpdated", timestamp);
       } catch (err) {
-        console.error("Failed to load static report:", err);
+        console.error("Failed to load latest-report.json:", err);
+        // Optional: show user-friendly error if needed
       }
-    };
+    }
+  };
 
-    loadData();
-  }, []);
+  loadData();
+}, []);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
