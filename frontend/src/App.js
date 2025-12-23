@@ -24,7 +24,7 @@ function App() {
   // CHANGE THIS TO A STRONG PASSWORD!
   const CORRECT_PASSWORD = "cosco2025";
 
-  // Long-press detection on title
+  // Long-press detection on title (hidden admin trigger)
   useEffect(() => {
     let pressTimer;
 
@@ -42,7 +42,6 @@ function App() {
     };
 
     const handleTouchStart = (e) => {
-      // Prevent scrolling while holding
       e.preventDefault();
       pressTimer = setTimeout(() => {
         setShowUpdateModal(true);
@@ -79,21 +78,45 @@ function App() {
     };
   }, []);
 
-  // Load from localStorage on mount
+  // Load data: localStorage first → fallback to static latest-report.json
   useEffect(() => {
-    const savedData = localStorage.getItem("coscoDashboardData");
-    const savedTimestamp = localStorage.getItem("coscoLastUpdated");
+    const loadData = async () => {
+      // Try localStorage first
+      const savedData = localStorage.getItem("coscoDashboardData");
+      const savedTimestamp = localStorage.getItem("coscoLastUpdated");
 
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setSheets(parsed);
-        setActiveSheet(Object.keys(parsed)[0]);
-        setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
-      } catch (e) {
-        console.error("Failed to load saved dashboard data:", e);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setSheets(parsed);
+          setActiveSheet(Object.keys(parsed)[0]);
+          setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+          return;
+        } catch (e) {
+          console.error("Corrupted localStorage — falling back to static report");
+        }
       }
-    }
+
+      // Fallback to pre-loaded JSON
+      try {
+        const res = await fetch("/latest-report.json");
+        if (res.ok) {
+          const data = await res.json();
+          setSheets(data.sheets);
+          setActiveSheet(Object.keys(data.sheets)[0]);
+          const timestamp = data.lastUpdated || new Date().toISOString();
+          setLastUpdated(new Date(timestamp));
+
+          // Cache for faster loads
+          localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
+          localStorage.setItem("coscoLastUpdated", timestamp);
+        }
+      } catch (err) {
+        console.error("Failed to load static report:", err);
+      }
+    };
+
+    loadData();
   }, []);
 
   const handlePasswordSubmit = (e) => {
@@ -126,7 +149,6 @@ function App() {
       setActiveSheet(Object.keys(json.sheets)[0]);
       setSelectedMasterMonth("All");
 
-      // Persist to localStorage
       localStorage.setItem("coscoDashboardData", JSON.stringify(json.sheets));
       const now = new Date().toISOString();
       localStorage.setItem("coscoLastUpdated", now);
@@ -135,12 +157,10 @@ function App() {
       setShowUpdateModal(false);
       setIsAuthenticatedForUpload(false);
     } catch (err) {
-      console.error("Upload error:", err);
-      setAuthError("Upload failed. Please try again.");
+      setAuthError("Upload failed — run local backend or update JSON file.");
     }
   };
 
-  // KPI and month logic (unchanged)
   const summary = sheets?.Summary;
   const kpis = computeKpisFromSummary(summary);
 
@@ -173,20 +193,14 @@ function App() {
       : sheets?.Master?.data?.filter((row) => row["Month"] === selectedMasterMonth) || [];
 
   const formatLastUpdated = lastUpdated
-    ? lastUpdated.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+    ? lastUpdated.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : null;
 
   return (
     <div className="app-shell">
-      {/* ================= HEADER ================= */}
       <div className="app-header">
         <div className="header-inner">
           <div>
-            {/* Long-press trigger on this h1 */}
             <h1 id="cosco-title" style={{ cursor: "pointer", userSelect: "none" }}>
               COSCO Automation Dashboard
             </h1>
@@ -204,12 +218,10 @@ function App() {
         </div>
       </div>
 
-      {/* ================= HIDDEN UPDATE MODAL ================= */}
       {showUpdateModal && (
         <div className="modal-overlay" onClick={() => setShowUpdateModal(false)}>
           <div className="modal-content card" onClick={(e) => e.stopPropagation()}>
             <h3>Update Dashboard Report</h3>
-
             {!isAuthenticatedForUpload ? (
               <>
                 <p>Enter password to upload a new report:</p>
@@ -223,10 +235,8 @@ function App() {
                     autoFocus
                     required
                   />
-                  <button type="submit" className="tab">
-                    Submit
-                  </button>
-                  {authError && <p style={{ color: "red", margin: "8px 0 0" }}>{authError}</p>}
+                  <button type="submit" className="tab">Submit</button>
+                  {authError && <p style={{ color: "red" }}>{authError}</p>}
                 </form>
               </>
             ) : (
@@ -239,10 +249,9 @@ function App() {
                   onChange={(e) => uploadExcel(e.target.files[0])}
                   autoFocus
                 />
-                {authError && <p style={{ color: "red", margin: "8px 0 0" }}>{authError}</p>}
+                {authError && <p style={{ color: "red" }}>{authError}</p>}
               </>
             )}
-
             <button
               className="tab"
               style={{ marginTop: "20px", background: "#ddd" }}
@@ -259,7 +268,6 @@ function App() {
         </div>
       )}
 
-      {/* ================= SHEET SELECTOR ================= */}
       <div className="container">
         {sheets && (
           <div className="card row">
@@ -272,57 +280,41 @@ function App() {
               }}
             >
               {Object.keys(sheets).map((sheet) => (
-                <option key={sheet} value={sheet}>
-                  {sheet}
-                </option>
+                <option key={sheet} value={sheet}>{sheet}</option>
               ))}
             </select>
           </div>
         )}
 
-        {/* ================= NO DATA MESSAGE ================= */}
         {!sheets && (
           <div className="card" style={{ textAlign: "center", marginTop: "60px", padding: "40px" }}>
-            <h3>No report loaded yet</h3>
-            <p>The dashboard will display the latest report once uploaded by an authorized user.</p>
+            <h3>Loading report...</h3>
+            <p>If this persists, contact administrator.</p>
           </div>
         )}
 
-        {/* ================= KPI STRIP ================= */}
-        {sheets && (
-          <div className="kpi-strip">
-            <KPI kpis={kpis} />
-          </div>
-        )}
+        {sheets && <div className="kpi-strip"><KPI kpis={kpis} /></div>}
 
-        {/* ================= MAIN CONTENT ================= */}
         {activeSheet && sheets && (
           <>
-            {/* Non-Master Sheets */}
             {activeSheet !== "Master" && (
               <>
                 <div className="card section-card">
                   <h3 className="section-title">
-                    {activeSheet === "Summary"
-                      ? "Monthly Support Overview"
-                      : "CBS Changes & Enhancements Trend"}
+                    {activeSheet === "Summary" ? "Monthly Support Overview" : "CBS Changes & Enhancements Trend"}
                   </h3>
-
                   {activeSheet === "cbs changes" && (
                     <p className="section-description">
                       This view focuses exclusively on <strong>CBS-related changes and enhancements</strong>.
                     </p>
                   )}
-
                   {activeSheet === "Summary" && (
                     <p className="section-description">
                       This summary provides a <strong>month-wise consolidation of total support effort</strong> across CR/Enhancements, Issues/Bugs, R&D, and Regular Maintenance.
                     </p>
                   )}
-
                   <Charts data={sheets[activeSheet].data} activeSheet={activeSheet} />
                 </div>
-
                 <div className="card section-card">
                   <h3 className="section-title">Detailed Breakdown (in hours)</h3>
                   <Table data={sheets[activeSheet].data} />
@@ -330,7 +322,6 @@ function App() {
               </>
             )}
 
-            {/* Master Sheet */}
             {activeSheet === "Master" && (
               <>
                 <div className="card section-card">
@@ -339,7 +330,6 @@ function App() {
                     The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments over several months.
                   </p>
                 </div>
-
                 <div className="card section-card">
                   <h3 className="section-title">Filter by Month</h3>
                   <div className="tabs">
@@ -360,7 +350,6 @@ function App() {
                     ))}
                   </div>
                 </div>
-
                 <div className="card section-card">
                   <h3 className="section-title">
                     Category-wise Support Effort (Hours)
@@ -368,7 +357,6 @@ function App() {
                   </h3>
                   <MasterCategoryChart data={filteredMasterData} />
                 </div>
-
                 <div className="card section-card">
                   <div className="section-header-row">
                     <h3 className="section-title">
@@ -389,16 +377,9 @@ function App() {
 
 export default App;
 
-/* ================= KPI CALCULATION ================= */
 function computeKpisFromSummary(summary) {
   if (!summary || summary.type !== "pivot") {
-    return {
-      totalSupport: 0,
-      maintenance: 0,
-      bugs: 0,
-      rd: 0,
-      cr: 0,
-    };
+    return { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 };
   }
 
   return summary.data
@@ -406,13 +387,11 @@ function computeKpisFromSummary(summary) {
     .reduce(
       (acc, row) => {
         const num = (v) => (typeof v === "number" && !isNaN(v) ? v : 0);
-
         acc.cr += num(row["CR / Enhancement"]);
         acc.bugs += num(row["Issue / Bug"]);
         acc.rd += num(row["R&D"]);
         acc.maintenance += num(row["Regular Maintenance"]);
         acc.totalSupport += num(row["Grand Total"]);
-
         return acc;
       },
       { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 }
