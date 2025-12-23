@@ -1,0 +1,36 @@
+How to do it step by step
+
+Get the list of real RM items
+Open the Items.xlsx file.
+Look at the column called Inventory Posting Group.
+Any row where this column says "RM" is a true raw material item.
+Make a list of those item codes (the “No.” column).
+Check each purchase order
+Go to the Purchase Lines data (the lines inside each PO).
+For every PO, look at the item numbers on its lines.
+If at least one of those item numbers is in your RM list from step 1, then this PO counts as an RM purchase.
+If none of the items are RM, ignore that PO completely.
+Run the existing analysis only on these RM POs
+Take the same calculations you already have (days to receive, SLA buckets, monthly trend, charts, Excel download) and apply them only to the POs that passed the RM filter.
+
+
+Coding logical steps(please verify before using)
+Filter the RM SLA Analysis to Only True Raw Material POs
+The current analysis includes all POs (mostly job work/subcontracting), but we want it to show only Raw Material purchases.
+Please add a filter so that only POs containing at least one real RM item are included in the analysis.
+Step-by-step what to do:
+
+Load the Items.xlsx file and extract the list of RM item codes:
+Read the sheet "Items".
+Find the column named "Inventory Posting Group".
+Filter rows where this column = "RM".
+Collect all unique values from the "No." column — this is your list of true RM item codes (e.g., PWD-021, WR-005, WR-025, etc.).
+
+Load the full Purchase Lines data (from the main data file, sheet "Purchase Lines"):
+You need the columns: Document No. (or Order No. — the PO number) and No. (the item code).
+Create a list or set of all PO numbers that have at least one line where the item code ("No.") is in the RM item list from step 1.
+
+Apply the filter early in the code:
+After loading and preparing df_main (or df_po), filter it so that only POs in the RM PO list (from step 2) are kept.
+Example:Pythondf_main = df_main[df_main['PO_No'].isin(rm_po_list)]
+Then let the rest of the existing code run unchanged (completion check, days to receive, buckets, monthly trend, charts, download, etc.).

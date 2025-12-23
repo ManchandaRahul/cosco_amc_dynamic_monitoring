@@ -1,0 +1,58 @@
+const MasterCategorySummary = ({ data }) => {
+  if (!data || data.length === 0) return null;
+
+  let lastCategory = null;
+  let lastHours = null;
+
+  const totals = {};
+
+  data.forEach((row) => {
+    // Forward-fill merged cells
+    if (row.Category) lastCategory = row.Category;
+    if (row.Hours !== null && row.Hours !== undefined && row.Hours !== "")
+      lastHours = Number(row.Hours);
+
+    const category = lastCategory;
+    const hours = Number(lastHours);
+
+    if (!category || isNaN(hours)) return;
+
+    totals[category] = (totals[category] || 0) + hours;
+  });
+
+  const rows = Object.entries(totals).map(([category, hours]) => ({
+    category,
+    hours: Number(hours.toFixed(2))
+  }));
+
+  const grandTotal = rows.reduce((s, r) => s + r.hours, 0).toFixed(2);
+
+  return (
+    <div className="card">
+      <h3 className="chart-title">Master – Category-wise Total Hours</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Total Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.category}>
+              <td>{r.category}</td>
+              <td>{r.hours}</td>
+            </tr>
+          ))}
+          <tr style={{ fontWeight: "bold", background: "#f1f5f9" }}>
+            <td>Grand Total</td>
+            <td>{grandTotal}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default MasterCategorySummary;

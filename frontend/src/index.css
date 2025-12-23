@@ -1,0 +1,208 @@
+/* ================= GLOBAL ================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background-color: #f4f6f9;
+  color: #1f2933;
+}
+
+/* ================= APP HEADER ================= */
+.app-header {
+  background: linear-gradient(90deg, #1e3a8a, #2563eb, #4338ca);
+  color: white;
+  padding: 20px 0;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-meta {
+  text-align: right;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* ================= LAYOUT ================= */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.section-card {
+  padding-top: 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+/* ================= INPUTS ================= */
+.file-input,
+.dropdown {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+/* ================= KPI STRIP ================= */
+.kpi-strip {
+  margin-bottom: 20px;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.kpi-card h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.kpi-card span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* KPI COLORS */
+.kpi-card.black h2 { color: #111827; }
+.kpi-card.blue h2 { color: #2563eb; }
+.kpi-card.green h2 { color: #059669; }
+.kpi-card.orange h2 { color: #d97706; }
+.kpi-card.red h2 { color: #dc2626; }
+
+/* ================= TABLE ================= */
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table thead {
+  background: #eff6ff;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.data-table tr:last-child {
+  background-color: #dbeafe;
+  font-weight: bold;
+}
+/* ================= APP SHELL ================= */
+
+.app-shell {
+  min-height: 100vh;
+  background: #f4f6f9;
+}
+
+/* ================= HEADER ================= */
+
+.app-header {
+  background: linear-gradient(90deg, #1e3a8a, #2563eb, #4338ca);
+  color: #ffffff;
+  padding: 20px 0;
+  margin-bottom: 20px;
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-meta {
+  text-align: right;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* ================= TABS ================= */
+
+.tab-bar {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab-btn {
+  padding: 10px 14px;
+  font-size: 14px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #111827;
+}
+
+.tab-btn.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}
+
+/* ================= SECTIONS ================= */
+
+.section-card {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #111827;
+}
+
