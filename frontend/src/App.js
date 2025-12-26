@@ -210,16 +210,15 @@ function App() {
                 Last updated: {formatLastUpdated}
               </span>
             )}
-            <button
-              className="tab"
-              style={{ marginLeft: "20px" }}
-              onClick={() => {
-                setShowUpdateModal(true);
-                setIsAuthenticatedForUpload(false);
-                setAuthError("");
-                setPasswordInput("");
-              }}
-            >
+<button
+  className="admin-panel-btn"
+  onClick={() => {
+    setShowUpdateModal(true);
+    setIsAuthenticatedForUpload(false);
+    setAuthError("");
+    setPasswordInput("");
+  }}
+>
               Admin Panel
             </button>
           </div>
@@ -365,19 +364,25 @@ function App() {
 
 
                 {/* Chart */}
-                <div className="card section-card">
-                  <h3 className="section-title">
-                    Category-wise Support Effort (Hours)
-                    {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
-                    {filteredMasterData.length > 0 && (
-                      <>
-                        {" - "}
-                        <strong>Total hours: {masterTotalHours}</strong>
-                      </>
-                    )}
-                  </h3>
-                  <MasterCategoryChart data={chartDataForMaster} />
-                </div>
+               {/* Chart */}
+<div className="card section-card">
+  <h3 className="section-title">
+    Category-wise Support Effort (Hours)
+    {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+    {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
+    {filteredMasterData.length > 0 && (
+      <>
+        {" - "}
+        <strong>Total hours: {masterTotalHours}</strong>
+      </>
+    )}
+  </h3>
+  <MasterCategoryChart 
+    data={chartDataForMaster}
+    onCategoryClick={setSelectedMasterCategory}
+    selectedCategory={selectedMasterCategory}
+  />
+</div>
                                 {/* Category Filter */}
                 {/* <div className="card section-card">
                   <h3 className="section-title">Filter by Category</h3>
@@ -400,34 +405,14 @@ function App() {
                   </div>
                 </div> */}
                 {/* Table */}
-                <div className="card section-card">
-                  <div className="section-header-row">
-                    <h3 className="section-title">Filter by Category</h3>
-                  <div className="tabs">
-                    <button
-                      className={`tab ${selectedMasterCategory === "All" ? "active" : ""}`}
-                      onClick={() => setSelectedMasterCategory("All")}
-                    >
-                      All Categories
-                    </button>
-                    {FIXED_CATEGORY_ORDER.map((cat) => (
-                      <button
-                        key={cat}
-                        className={`tab ${selectedMasterCategory === cat ? "active" : ""}`}
-                        onClick={() => setSelectedMasterCategory(cat)}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                    <h3 className="section-title">
-                      Detailed Activity Register (Master)
-                      {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
-                      {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
-                    </h3>
-                  </div>
-                  <Table data={tableDataForMaster} />
-                </div>
+<div className="card section-card">
+  <h3 className="section-title">
+    Detailed Activity Register (Master)
+    {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+    {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
+  </h3>
+  <Table data={tableDataForMaster} />
+</div>
               </>
             )}
           </>
@@ -440,22 +425,48 @@ function App() {
 export default App;
 
 function computeKpisFromSummary(summary) {
-  if (!summary || summary.type !== "pivot") {
-    return { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 };
+  const defaults = { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 };
+
+  if (!summary || summary.type !== "pivot" || !Array.isArray(summary.data)) {
+    return defaults;
   }
 
-  return summary.data
-    .filter((row) => row["Row Labels"] !== "Grand Total")
-    .reduce(
-      (acc, row) => {
-        const num = (v) => (typeof v === "number" && !isNaN(v) ? v : 0);
-        acc.cr += num(row["CR / Enhancement"]);
-        acc.bugs += num(row["Issue / Bug"]);
-        acc.rd += num(row["R&D"]);
-        acc.maintenance += num(row["Regular Maintenance"]);
-        acc.totalSupport += num(row["Grand Total"]);
-        return acc;
-      },
-      { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 }
-    );
+  // Find the row where Month is 'Grand Total'
+  const grandTotalRow = summary.data.find(
+    (row) => String(row["Month"] || "").trim() === "Grand Total"
+  );
+
+  // Robust number parser (handles strings, '-', numbers, etc.)
+  const parseNum = (v) => {
+    if (typeof v === "number" && !isNaN(v)) return v;
+    if (v === '-' || v === '' || v == null) return 0;
+    if (typeof v === "string") {
+      const cleaned = v.replace(/,/g, "").trim();
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  };
+
+  if (!grandTotalRow) {
+    // Fallback: sum all monthly rows (excluding any potential Grand Total row)
+    return summary.data.reduce((acc, row) => {
+      if (String(row["Month"] || "").trim() === "Grand Total") return acc;
+      acc.cr += parseNum(row["CR / Enhancement"]);
+      acc.bugs += parseNum(row["Issue / Bug"]);
+      acc.rd += parseNum(row["R&D"]);
+      acc.maintenance += parseNum(row["Regular Maintenance"]);
+      acc.totalSupport += parseNum(row["Grand Total"]);
+      return acc;
+    }, { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 });
+  }
+
+  // Extract directly from the Grand Total row
+  return {
+    totalSupport: parseNum(grandTotalRow["Grand Total"]),
+    maintenance: parseNum(grandTotalRow["Regular Maintenance"]),
+    bugs: parseNum(grandTotalRow["Issue / Bug"]),
+    rd: parseNum(grandTotalRow["R&D"]),
+    cr: parseNum(grandTotalRow["CR / Enhancement"]),
+  };
 }

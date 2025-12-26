@@ -58,9 +58,22 @@ export default function Charts({ data = [], activeSheet }) {
       <h4 style={{ marginBottom: 12, fontWeight: 600 }}>{title}</h4>
 
       <ResponsiveContainer width="100%" height={320}>
-        <BarChart data={chartData}>
+        <BarChart 
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="Month" />
+          
+          <XAxis 
+            dataKey="Month"
+            label={{ 
+              value: "Month", 
+              position: "insideBottom", 
+              offset: -5,
+              style: { fontWeight: 600 }
+            }}
+          />
+          
           <YAxis
             label={{
               value: yLabel,
@@ -68,6 +81,7 @@ export default function Charts({ data = [], activeSheet }) {
               position: "insideLeft"
             }}
           />
+          
           <Tooltip formatter={(v) => `${v} hrs`} />
 
           <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]}>

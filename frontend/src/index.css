@@ -28,11 +28,13 @@ body {
 }
 
 .header-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;                    /* Clean spacing between text and button */
   text-align: right;
   font-size: 13px;
   opacity: 0.9;
 }
-
 /* ================= LAYOUT ================= */
 .container {
   max-width: 1200px;
@@ -128,10 +130,10 @@ body {
   background-color: #f9fafb;
 }
 
-.data-table tr:last-child {
+/* .data-table tr:last-child {
   background-color: #dbeafe;
   font-weight: bold;
-}
+} */
 /* ================= APP SHELL ================= */
 
 .app-shell {
@@ -206,3 +208,175 @@ body {
   color: #111827;
 }
 
+/* ================= FILTER TABS (Month & Category) ================= */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+.tab.active {
+  background-color: #2563eb !important;   /* Primary blue */
+  color: white !important;
+  border-color: #2563eb !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+/* ================= ADMIN PANEL BUTTON ================= */
+.admin-panel-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: white;
+  color: #2563eb;                    /* Matching your blue theme */
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;             /* Full pill shape */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+
+.admin-panel-btn:hover {
+  background-color: #f8fafc;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.admin-panel-btn:active {
+  transform: translateY(0);
+}
+
+/* ================= RESPONSIVE / MOBILE ================= */
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header-inner {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Header adjustments */
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .header-meta {
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+    font-size: 12px;
+  }
+
+  #cosco-title {
+    font-size: 24px !important;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  /* KPI Strip - stack vertically on small screens */
+  .kpi-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .kpi-card h2 {
+    font-size: 24px;
+  }
+
+  /* Filter tabs - wrap and smaller */
+  .tabs {
+    gap: 8px;
+  }
+
+  .tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: 16px;
+  }
+
+  /* Table - improve horizontal scrolling */
+  .table-container {
+    margin: 0 -20px;
+    padding: 0 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    font-size: 12px;
+    min-width: 800px; /* Forces horizontal scroll if needed */
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small phones */
+  .app-header {
+    padding: 16px 0;
+  }
+
+  #cosco-title {
+    font-size: 22px !important;
+  }
+
+  .admin-panel-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 15px;
+  }
+
+  .tab {
+    padding: 7px 12px;
+    font-size: 12.5px;
+  }
+
+  /* Make dropdown full width */
+  .dropdown {
+    width: 100%;
+  }
+}
