@@ -11,6 +11,7 @@ function App() {
 
   // Master sheet states
   const [selectedMasterMonth, setSelectedMasterMonth] = useState("All");
+  const [selectedMasterCategory, setSelectedMasterCategory] = useState("All"); // NEW
 
   // Admin modal states
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -24,108 +25,49 @@ function App() {
   // CHANGE THIS TO A STRONG PASSWORD!
   const CORRECT_PASSWORD = "cosco2025";
 
-  // Long-press detection on title (hidden admin trigger)
+  // Load data
   useEffect(() => {
-    let pressTimer;
+    const loadData = async () => {
+      let dataLoaded = false;
 
-    const handleMouseDown = () => {
-      pressTimer = setTimeout(() => {
-        setShowUpdateModal(true);
-        setIsAuthenticatedForUpload(false);
-        setAuthError("");
-        setPasswordInput("");
-      }, 2000); // 2 seconds hold
-    };
+      const savedData = localStorage.getItem("coscoDashboardData");
+      const savedTimestamp = localStorage.getItem("coscoLastUpdated");
 
-    const handleMouseUp = () => {
-      clearTimeout(pressTimer);
-    };
-
-    const handleTouchStart = (e) => {
-      e.preventDefault();
-      pressTimer = setTimeout(() => {
-        setShowUpdateModal(true);
-        setIsAuthenticatedForUpload(false);
-        setAuthError("");
-        setPasswordInput("");
-      }, 2000);
-    };
-
-    const handleTouchEnd = () => {
-      clearTimeout(pressTimer);
-    };
-
-    const titleElement = document.getElementById("cosco-title");
-    if (titleElement) {
-      titleElement.addEventListener("mousedown", handleMouseDown);
-      titleElement.addEventListener("mouseup", handleMouseUp);
-      titleElement.addEventListener("mouseleave", handleMouseUp);
-      titleElement.addEventListener("touchstart", handleTouchStart);
-      titleElement.addEventListener("touchend", handleTouchEnd);
-      titleElement.addEventListener("touchcancel", handleTouchEnd);
-    }
-
-    return () => {
-      if (titleElement) {
-        titleElement.removeEventListener("mousedown", handleMouseDown);
-        titleElement.removeEventListener("mouseup", handleMouseUp);
-        titleElement.removeEventListener("mouseleave", handleMouseUp);
-        titleElement.removeEventListener("touchstart", handleTouchStart);
-        titleElement.removeEventListener("touchend", handleTouchEnd);
-        titleElement.removeEventListener("touchcancel", handleTouchEnd);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setSheets(parsed);
+          setActiveSheet(Object.keys(parsed)[0]);
+          setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+          dataLoaded = true;
+        } catch (e) {
+          console.error("Corrupted localStorage — clearing and falling back");
+          localStorage.removeItem("coscoDashboardData");
+          localStorage.removeItem("coscoLastUpdated");
+        }
       }
-      clearTimeout(pressTimer);
+
+      if (!dataLoaded) {
+        try {
+          const res = await fetch("/latest-report.json");
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          setSheets(data.sheets);
+          setActiveSheet(Object.keys(data.sheets)[0]);
+          const timestamp = data.lastUpdated || new Date().toISOString();
+          setLastUpdated(new Date(timestamp));
+
+          localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
+          localStorage.setItem("coscoLastUpdated", timestamp);
+        } catch (err) {
+          console.error("Failed to load latest-report.json:", err);
+        }
+      }
     };
+
+    loadData();
   }, []);
-
-  // Load data: localStorage first → fallback to static latest-report.json
-// Load data: localStorage first → always fallback to static JSON if needed
-useEffect(() => {
-  const loadData = async () => {
-    let dataLoaded = false;
-
-    // Try localStorage first
-    const savedData = localStorage.getItem("coscoDashboardData");
-    const savedTimestamp = localStorage.getItem("coscoLastUpdated");
-
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setSheets(parsed);
-        setActiveSheet(Object.keys(parsed)[0]);
-        setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
-        dataLoaded = true;
-      } catch (e) {
-        console.error("Corrupted localStorage — clearing and falling back");
-        localStorage.removeItem("coscoDashboardData");
-        localStorage.removeItem("coscoLastUpdated");
-      }
-    }
-
-    // Always fallback to static JSON if no valid local data
-    if (!dataLoaded) {
-      try {
-        const res = await fetch("/latest-report.json");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        setSheets(data.sheets);
-        setActiveSheet(Object.keys(data.sheets)[0]);
-        const timestamp = data.lastUpdated || new Date().toISOString();
-        setLastUpdated(new Date(timestamp));
-
-        // Cache it for next visits
-        localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
-        localStorage.setItem("coscoLastUpdated", timestamp);
-      } catch (err) {
-        console.error("Failed to load latest-report.json:", err);
-        // Optional: show user-friendly error if needed
-      }
-    }
-  };
-
-  loadData();
-}, []);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -156,6 +98,7 @@ useEffect(() => {
       setSheets(json.sheets);
       setActiveSheet(Object.keys(json.sheets)[0]);
       setSelectedMasterMonth("All");
+      setSelectedMasterCategory("All");
 
       localStorage.setItem("coscoDashboardData", JSON.stringify(json.sheets));
       const now = new Date().toISOString();
@@ -200,6 +143,51 @@ useEffect(() => {
       ? sheets?.Master?.data || []
       : sheets?.Master?.data?.filter((row) => row["Month"] === selectedMasterMonth) || [];
 
+  // Apply category filter to table
+  const tableDataForMaster = selectedMasterCategory === "All"
+    ? filteredMasterData
+    : filteredMasterData.filter(row => row["Category"] === selectedMasterCategory);
+
+  // === CHART: Fixed order + all categories shown ===
+  const FIXED_CATEGORY_ORDER = [
+    "Regular Maintenance",
+    "CR / Enhancement",
+    "Issue / Bug",
+    "R&D"
+  ];
+
+  const categoryKey = "Category";
+
+  const hoursKeyOptions = ["No. of hours", "No of hours", "Hours", "hours"];
+
+  const getHoursValue = (row) => {
+    for (const key of hoursKeyOptions) {
+      if (key in row) return Number(row[key]) || 0;
+    }
+    return 0;
+  };
+
+  const presentCategories = new Set(filteredMasterData.map(row => row[categoryKey]).filter(Boolean));
+
+  const dummyRows = FIXED_CATEGORY_ORDER
+    .filter(cat => !presentCategories.has(cat))
+    .map(cat => ({
+      [categoryKey]: cat,
+      "No. of hours": 0
+    }));
+
+  let chartDataForMaster = [...filteredMasterData, ...dummyRows];
+
+  chartDataForMaster.sort((a, b) => {
+    const indexA = FIXED_CATEGORY_ORDER.indexOf(a[categoryKey]);
+    const indexB = FIXED_CATEGORY_ORDER.indexOf(b[categoryKey]);
+    return indexA - indexB;
+  });
+
+  const masterTotalHours = filteredMasterData
+    .reduce((sum, row) => sum + getHoursValue(row), 0)
+    .toFixed(1);
+
   const formatLastUpdated = lastUpdated
     ? lastUpdated.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : null;
@@ -222,6 +210,18 @@ useEffect(() => {
                 Last updated: {formatLastUpdated}
               </span>
             )}
+            <button
+              className="tab"
+              style={{ marginLeft: "20px" }}
+              onClick={() => {
+                setShowUpdateModal(true);
+                setIsAuthenticatedForUpload(false);
+                setAuthError("");
+                setPasswordInput("");
+              }}
+            >
+              Admin Panel
+            </button>
           </div>
         </div>
       </div>
@@ -285,6 +285,7 @@ useEffect(() => {
               onChange={(e) => {
                 setActiveSheet(e.target.value);
                 setSelectedMasterMonth("All");
+                setSelectedMasterCategory("All");
               }}
             >
               {Object.keys(sheets).map((sheet) => (
@@ -338,6 +339,8 @@ useEffect(() => {
                     The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments over several months.
                   </p>
                 </div>
+
+                {/* Month Filter */}
                 <div className="card section-card">
                   <h3 className="section-title">Filter by Month</h3>
                   <div className="tabs">
@@ -358,21 +361,72 @@ useEffect(() => {
                     ))}
                   </div>
                 </div>
+
+
+
+                {/* Chart */}
                 <div className="card section-card">
                   <h3 className="section-title">
                     Category-wise Support Effort (Hours)
                     {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+                    {filteredMasterData.length > 0 && (
+                      <>
+                        {" - "}
+                        <strong>Total hours: {masterTotalHours}</strong>
+                      </>
+                    )}
                   </h3>
-                  <MasterCategoryChart data={filteredMasterData} />
+                  <MasterCategoryChart data={chartDataForMaster} />
                 </div>
+                                {/* Category Filter */}
+                {/* <div className="card section-card">
+                  <h3 className="section-title">Filter by Category</h3>
+                  <div className="tabs">
+                    <button
+                      className={`tab ${selectedMasterCategory === "All" ? "active" : ""}`}
+                      onClick={() => setSelectedMasterCategory("All")}
+                    >
+                      All Categories
+                    </button>
+                    {FIXED_CATEGORY_ORDER.map((cat) => (
+                      <button
+                        key={cat}
+                        className={`tab ${selectedMasterCategory === cat ? "active" : ""}`}
+                        onClick={() => setSelectedMasterCategory(cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div> */}
+                {/* Table */}
                 <div className="card section-card">
                   <div className="section-header-row">
+                    <h3 className="section-title">Filter by Category</h3>
+                  <div className="tabs">
+                    <button
+                      className={`tab ${selectedMasterCategory === "All" ? "active" : ""}`}
+                      onClick={() => setSelectedMasterCategory("All")}
+                    >
+                      All Categories
+                    </button>
+                    {FIXED_CATEGORY_ORDER.map((cat) => (
+                      <button
+                        key={cat}
+                        className={`tab ${selectedMasterCategory === cat ? "active" : ""}`}
+                        onClick={() => setSelectedMasterCategory(cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
                     <h3 className="section-title">
                       Detailed Activity Register (Master)
                       {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+                      {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
                     </h3>
                   </div>
-                  <Table data={filteredMasterData} />
+                  <Table data={tableDataForMaster} />
                 </div>
               </>
             )}
