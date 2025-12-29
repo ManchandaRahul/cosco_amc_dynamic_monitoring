@@ -198,7 +198,7 @@ function App() {
         <div className="header-inner">
           <div>
             <h1 id="cosco-title" style={{ cursor: "pointer", userSelect: "none" }}>
-              COSCO Automation Dashboard
+              COSCO AMC Monitoring
             </h1>
             <p className="subtitle">Dynamic Excel-based POC</p>
           </div>
@@ -335,7 +335,7 @@ function App() {
                 <div className="card section-card">
                   <h3 className="section-title">Master Activity Overview</h3>
                   <p className="section-description">
-                    The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments over several months.
+                    The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments.
                   </p>
                 </div>
 
