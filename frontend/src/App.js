@@ -200,7 +200,6 @@ function App() {
             <h1 id="cosco-title" style={{ cursor: "pointer", userSelect: "none" }}>
               COSCO AMC Monitoring
             </h1>
-            <p className="subtitle">Dynamic Excel-based POC</p>
           </div>
           <div className="header-meta">
             <span>Report Period: </span>
