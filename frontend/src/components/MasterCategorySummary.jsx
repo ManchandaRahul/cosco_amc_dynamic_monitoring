@@ -2,10 +2,10 @@ const MasterCategorySummary = ({ data }) => {
   if (!data || data.length === 0) return null;
 
   const categories = [
+    "Regular Maintenance",
     "CR / Enhancement",
     "Issue / Bug",
-    "R&D",
-    "Regular Maintenance"
+    "R&D"
   ];
 
   const monthMap = {};
@@ -15,10 +15,20 @@ const MasterCategorySummary = ({ data }) => {
   categories.forEach((c) => (grandTotals[c] = 0));
   grandTotals["Grand Total"] = 0;
 
+  // Detect hours key
+  const hoursKeyOptions = ["No. of hours", "No of hours", "Hours", "hours"];
+  
+  const getHoursValue = (row) => {
+    for (const key of hoursKeyOptions) {
+      if (key in row) return Number(row[key]) || 0;
+    }
+    return 0;
+  };
+
   data.forEach((row) => {
     const month = row.Month?.trim();
     const category = row.Category?.trim();
-    const hours = Number(row.Hours);
+    const hours = getHoursValue(row);
 
     if (!month || !category || isNaN(hours)) return;
     if (!categories.includes(category)) return;
@@ -41,41 +51,51 @@ const MasterCategorySummary = ({ data }) => {
   const months = Object.keys(monthMap);
 
   return (
-    <div className="card">
-      <h3 className="chart-title">Master – Monthly Category Summary</h3>
+    <div className="card section-card">
+      <h3 className="section-title">Master – Monthly Category Summary</h3>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Month</th>
-            {categories.map((c) => (
-              <th key={c}>{c}</th>
-            ))}
-            <th>Grand Total</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {months.map((month) => (
-            <tr key={month}>
-              <td>{month}</td>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr>
+              <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Month</th>
               {categories.map((c) => (
-                <td key={c}>{monthMap[month][c] || ""}</td>
+                <th key={c} style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #e5e7eb' }}>{c}</th>
               ))}
-              <td>{monthMap[month]["Grand Total"]}</td>
+              <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #e5e7eb' }}>Grand Total</th>
             </tr>
-          ))}
+          </thead>
 
-          {/* GRAND TOTAL ROW */}
-          <tr style={{ fontWeight: "bold", background: "#f1f5f9" }}>
-            <td>Grand Total</td>
-            {categories.map((c) => (
-              <td key={c}>{grandTotals[c].toFixed(1)}</td>
+          <tbody>
+            {months.map((month) => (
+              <tr key={month}>
+                <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>{month}</td>
+                {categories.map((c) => (
+                  <td key={c} style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #e5e7eb' }}>
+                    {monthMap[month][c] > 0 ? monthMap[month][c].toFixed(1) : "—"}
+                  </td>
+                ))}
+                <td style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid #e5e7eb', fontWeight: '600' }}>
+                  {monthMap[month]["Grand Total"].toFixed(1)}
+                </td>
+              </tr>
             ))}
-            <td>{grandTotals["Grand Total"].toFixed(1)}</td>
-          </tr>
-        </tbody>
-      </table>
+
+            {/* GRAND TOTAL ROW */}
+            <tr style={{ fontWeight: "bold", background: "#f1f5f9" }}>
+              <td style={{ padding: '12px' }}>Grand Total</td>
+              {categories.map((c) => (
+                <td key={c} style={{ padding: '12px', textAlign: 'right' }}>
+                  {grandTotals[c].toFixed(1)}
+                </td>
+              ))}
+              <td style={{ padding: '12px', textAlign: 'right' }}>
+                {grandTotals["Grand Total"].toFixed(1)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

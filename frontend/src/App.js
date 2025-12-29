@@ -364,7 +364,7 @@ function App() {
 
 
                 {/* Chart */}
-               {/* Chart */}
+             {/* Chart */}
 <div className="card section-card">
   <h3 className="section-title">
     Category-wise Support Effort (Hours)
@@ -404,7 +404,7 @@ function App() {
                     ))}
                   </div>
                 </div> */}
-                {/* Table */}
+               {/* Table */}
 <div className="card section-card">
   <h3 className="section-title">
     Detailed Activity Register (Master)
