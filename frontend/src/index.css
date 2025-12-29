@@ -380,3 +380,17 @@ body {
     width: 100%;
   }
 }
+.header-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cosco-logo {
+  max-height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}

@@ -8,30 +8,34 @@ import "./index.css";
 function App() {
   const [sheets, setSheets] = useState(null);
   const [activeSheet, setActiveSheet] = useState(null);
+  const [sheetNotes, setSheetNotes] = useState({}); // ← NEW: for notes & inferences
+  const isAdminMode = new URLSearchParams(window.location.search).get('admin') === 'true';
 
   // Master sheet states
   const [selectedMasterMonth, setSelectedMasterMonth] = useState("All");
-  const [selectedMasterCategory, setSelectedMasterCategory] = useState("All"); // NEW
+  const [selectedMasterCategory, setSelectedMasterCategory] = useState("All");
 
   // Admin modal states
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
   const [isAuthenticatedForUpload, setIsAuthenticatedForUpload] = useState(false);
+  const [editingInferences, setEditingInferences] = useState(false);
+const [inferenceDraft, setInferenceDraft] = useState("");
 
   // Last updated display
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // CHANGE THIS TO A STRONG PASSWORD!
   const CORRECT_PASSWORD = "cosco2025";
 
-  // Load data
+  // Load data + notes
   useEffect(() => {
     const loadData = async () => {
       let dataLoaded = false;
 
       const savedData = localStorage.getItem("coscoDashboardData");
       const savedTimestamp = localStorage.getItem("coscoLastUpdated");
+      const savedNotes = localStorage.getItem("coscoNotesData"); // ← NEW
 
       if (savedData) {
         try {
@@ -39,11 +43,17 @@ function App() {
           setSheets(parsed);
           setActiveSheet(Object.keys(parsed)[0]);
           setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+
+          if (savedNotes) {
+            setSheetNotes(JSON.parse(savedNotes));
+          }
+
           dataLoaded = true;
         } catch (e) {
           console.error("Corrupted localStorage — clearing and falling back");
           localStorage.removeItem("coscoDashboardData");
           localStorage.removeItem("coscoLastUpdated");
+          localStorage.removeItem("coscoNotesData");
         }
       }
 
@@ -60,6 +70,20 @@ function App() {
 
           localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
           localStorage.setItem("coscoLastUpdated", timestamp);
+
+          // Load notes.json
+          let notesData = {};
+          try {
+            const notesRes = await fetch("/notes.json");
+            if (notesRes.ok) {
+              notesData = await notesRes.json();
+              setSheetNotes(notesData);
+              localStorage.setItem("coscoNotesData", JSON.stringify(notesData));
+            }
+          } catch (err) {
+            console.warn("notes.json not found or failed to load");
+          }
+
         } catch (err) {
           console.error("Failed to load latest-report.json:", err);
         }
@@ -112,13 +136,35 @@ function App() {
     }
   };
 
+  // // Quick edit notes (admin only)
+  // const quickEditNotes = () => {
+  //   if (!activeSheet) return;
+
+  //   const current = sheetNotes[activeSheet] || { notes: "", inferences: "" };
+
+  //   const newNotes = prompt("Edit Notes:", current.notes);
+  //   if (newNotes === null) return;
+
+  //   const newInferences = prompt("Edit Key Inferences:", current.inferences);
+  //   if (newInferences === null) return;
+
+  //   const updatedNotes = {
+  //     ...sheetNotes,
+  //     [activeSheet]: {
+  //       notes: newNotes,
+  //       inferences: newInferences
+  //     }
+  //   };
+
+  //   setSheetNotes(updatedNotes);
+  //   localStorage.setItem("coscoNotesData", JSON.stringify(updatedNotes));
+  //   alert("Notes updated for this session! To make permanent, manually edit public/notes.json or extend backend later.");
+  // };
+
   const summary = sheets?.Summary;
   const kpis = computeKpisFromSummary(summary);
 
-  const monthOrder = [
-    "May-25", "Jun-25", "Jul-25", "Aug-25",
-    "Sep-25", "Oct-25", "Nov-25"
-  ];
+  const monthOrder = ["May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25"];
 
   const monthDisplay = {
     "May-25": "May 2025",
@@ -143,12 +189,10 @@ function App() {
       ? sheets?.Master?.data || []
       : sheets?.Master?.data?.filter((row) => row["Month"] === selectedMasterMonth) || [];
 
-  // Apply category filter to table
   const tableDataForMaster = selectedMasterCategory === "All"
     ? filteredMasterData
     : filteredMasterData.filter(row => row["Category"] === selectedMasterCategory);
 
-  // === CHART: Fixed order + all categories shown ===
   const FIXED_CATEGORY_ORDER = [
     "Regular Maintenance",
     "CR / Enhancement",
@@ -209,17 +253,19 @@ function App() {
                 Last updated: {formatLastUpdated}
               </span>
             )}
-<button
-  className="admin-panel-btn"
-  onClick={() => {
-    setShowUpdateModal(true);
-    setIsAuthenticatedForUpload(false);
-    setAuthError("");
-    setPasswordInput("");
-  }}
->
-              Admin Panel
-            </button>
+            {isAdminMode && (
+              <button
+                className="admin-panel-btn"
+                onClick={() => {
+                  setShowUpdateModal(true);
+                  setIsAuthenticatedForUpload(false);
+                  setAuthError("");
+                  setPasswordInput("");
+                }}
+              >
+                Admin Panel
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -256,6 +302,75 @@ function App() {
                   autoFocus
                 />
                 {authError && <p style={{ color: "red" }}>{authError}</p>}
+
+                                {/* Inline Inferences Editor */}
+                <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #ddd" }}>
+                  <h4 style={{ margin: "0 0 12px 0" }}>Edit Key Insights (Inferences)</h4>
+                  <p style={{ fontSize: "0.9em", color: "#555", marginBottom: "12px" }}>
+                    Current sheet: <strong>{activeSheet || "None selected"}</strong>
+                  </p>
+
+                  <button
+                    className="tab"
+                    style={{ background: "#1976d2", color: "white" }}
+                    onClick={() => {
+                      const current = sheetNotes[activeSheet]?.inferences || "";
+                      setInferenceDraft(current);
+                      setEditingInferences(true);
+                    }}
+                    disabled={!activeSheet}
+                  >
+                    Edit Insights for This Sheet
+                  </button>
+
+                  {editingInferences && activeSheet && (
+                    <div style={{ marginTop: "16px" }}>
+                      <textarea
+                        value={inferenceDraft}
+                        onChange={(e) => setInferenceDraft(e.target.value)}
+                        rows="6"
+                        placeholder="Enter key insights and inferences for this sheet..."
+                        style={{
+                          width: "100%",
+                          padding: "12px",
+                          borderRadius: "6px",
+                          border: "1px solid #ccc",
+                          fontFamily: "inherit",
+                          fontSize: "1em"
+                        }}
+                        autoFocus
+                      />
+                      <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
+                        <button
+                          className="tab"
+                          style={{ background: "#4caf50", color: "white" }}
+                          onClick={() => {
+                            const updated = {
+                              ...sheetNotes,
+                              [activeSheet]: {
+                                ...(sheetNotes[activeSheet] || {}),
+                                inferences: inferenceDraft
+                              }
+                            };
+                            setSheetNotes(updated);
+                            localStorage.setItem("coscoNotesData", JSON.stringify(updated));
+                            setEditingInferences(false);
+                            alert("Key Insights saved! Visible immediately. Update notes.json manually for permanent save.");
+                          }}
+                        >
+                          Save Insights
+                        </button>
+                        <button
+                          className="tab"
+                          style={{ background: "#ddd" }}
+                          onClick={() => setEditingInferences(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
             <button
@@ -302,120 +417,174 @@ function App() {
 
         {sheets && <div className="kpi-strip"><KPI kpis={kpis} /></div>}
 
-        {activeSheet && sheets && (
-          <>
-            {activeSheet !== "Master" && (
-              <>
-                <div className="card section-card">
-                  <h3 className="section-title">
-                    {activeSheet === "Summary" ? "Monthly Support Overview" : "CBS Changes & Enhancements Trend"}
-                  </h3>
-                  {activeSheet === "cbs changes" && (
-                    <p className="section-description">
-                      This view focuses exclusively on <strong>CBS-related changes and enhancements</strong>.
-                    </p>
-                  )}
-                  {activeSheet === "Summary" && (
-                    <p className="section-description">
-                      This summary provides a <strong>month-wise consolidation of total support effort</strong> across CR/Enhancements, Issues/Bugs, R&D, and Regular Maintenance.
-                    </p>
-                  )}
-                  <Charts data={sheets[activeSheet].data} activeSheet={activeSheet} />
-                </div>
-                <div className="card section-card">
-                  <h3 className="section-title">Detailed Breakdown (in hours)</h3>
-                  <Table data={sheets[activeSheet].data} />
-                </div>
-              </>
-            )}
+{activeSheet && sheets && (
+  <>
+    {/* Top-level Notes & Inferences (optional - can be removed later)
+    {sheetNotes[activeSheet] && sheetNotes[activeSheet].inferences && (
+      <div className="card section-card">
+        <h3 className="section-title">Overall Notes & Inferences</h3>
+        <div style={{ lineHeight: "1.6", padding: "8px 0" }}>
+          {sheetNotes[activeSheet].inferences && (
+            <>
+              <strong>Key Inferences:</strong>
+              <p style={{ margin: "8px 0", whiteSpace: "pre-line" }}>
+                {sheetNotes[activeSheet].inferences}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    )} */}
 
-            {activeSheet === "Master" && (
-              <>
-                <div className="card section-card">
-                  <h3 className="section-title">Master Activity Overview</h3>
-                  <p className="section-description">
-                    The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments.
-                  </p>
-                </div>
-
-                {/* Month Filter */}
-                <div className="card section-card">
-                  <h3 className="section-title">Filter by Month</h3>
-                  <div className="tabs">
-                    <button
-                      className={`tab ${selectedMasterMonth === "All" ? "active" : ""}`}
-                      onClick={() => setSelectedMasterMonth("All")}
-                    >
-                      All Months
-                    </button>
-                    {masterMonthCodes.map((code) => (
-                      <button
-                        key={code}
-                        className={`tab ${selectedMasterMonth === code ? "active" : ""}`}
-                        onClick={() => setSelectedMasterMonth(code)}
-                      >
-                        {getDisplayMonth(code)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-
-
-                {/* Chart */}
-             {/* Chart */}
-<div className="card section-card">
-  <h3 className="section-title">
-    Category-wise Support Effort (Hours)
-    {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
-    {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
-    {filteredMasterData.length > 0 && (
+    {/* === Summary & cbs changes Sheets === */}
+    {activeSheet !== "Master" && (
       <>
-        {" - "}
-        <strong>Total hours: {masterTotalHours}</strong>
+        <div className="card section-card">
+          <h3 className="section-title">
+            {activeSheet === "Summary" ? "Monthly Support Overview" : "CBS Changes & Enhancements Trend"}
+          </h3>
+          {activeSheet === "cbs changes" && (
+            <p className="section-description">
+              This view focuses exclusively on <strong>CBS-related changes and enhancements</strong>.
+            </p>
+          )}
+          {activeSheet === "Summary" && (
+            <p className="section-description">
+              This summary provides a <strong>month-wise consolidation of total support effort</strong> across CR/Enhancements, Issues/Bugs, R&D, and Regular Maintenance.
+            </p>
+          )}
+
+          <Charts data={sheets[activeSheet].data} activeSheet={activeSheet} />
+
+          {/* NEW: Key Insights below the chart */}
+          {sheetNotes[activeSheet]?.inferences && (
+            <div
+              className="inference-box"
+              style={{
+                marginTop: "24px",
+                padding: "18px",
+                background: "#f0f7ff",
+                borderRadius: "10px",
+                borderLeft: "5px solid #1e88e5",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+              }}
+            >
+              <strong style={{ color: "#1565c0", fontSize: "1.1em" }}>
+                Key Insights from this Chart
+              </strong>
+              <p
+                style={{
+                  margin: "12px 0 0",
+                  whiteSpace: "pre-line",
+                  lineHeight: "1.8",
+                  color: "#333"
+                }}
+              >
+                {sheetNotes[activeSheet].inferences}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="card section-card">
+          <h3 className="section-title">Detailed Breakdown (in hours)</h3>
+          <Table data={sheets[activeSheet].data} />
+        </div>
       </>
     )}
-  </h3>
-  <MasterCategoryChart 
-    data={chartDataForMaster}
-    onCategoryClick={setSelectedMasterCategory}
-    selectedCategory={selectedMasterCategory}
-  />
-</div>
-                                {/* Category Filter */}
-                {/* <div className="card section-card">
-                  <h3 className="section-title">Filter by Category</h3>
-                  <div className="tabs">
-                    <button
-                      className={`tab ${selectedMasterCategory === "All" ? "active" : ""}`}
-                      onClick={() => setSelectedMasterCategory("All")}
-                    >
-                      All Categories
-                    </button>
-                    {FIXED_CATEGORY_ORDER.map((cat) => (
-                      <button
-                        key={cat}
-                        className={`tab ${selectedMasterCategory === cat ? "active" : ""}`}
-                        onClick={() => setSelectedMasterCategory(cat)}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div> */}
-               {/* Table */}
-<div className="card section-card">
-  <h3 className="section-title">
-    Detailed Activity Register (Master)
-    {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
-    {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
-  </h3>
-  <Table data={tableDataForMaster} />
-</div>
+
+    {/* === Master Sheet === */}
+    {activeSheet === "Master" && (
+      <>
+        <div className="card section-card">
+          <h3 className="section-title">Master Activity Overview</h3>
+          <p className="section-description">
+            The Master sheet logs detailed support activities for COSCO AMC monitoring which includes daily monitoring, bug fixes/issue resolutions, and enhancements/deployments.
+          </p>
+        </div>
+
+        <div className="card section-card">
+          <h3 className="section-title">Filter by Month</h3>
+          <div className="tabs">
+            <button
+              className={`tab ${selectedMasterMonth === "All" ? "active" : ""}`}
+              onClick={() => setSelectedMasterMonth("All")}
+            >
+              All Months
+            </button>
+            {masterMonthCodes.map((code) => (
+              <button
+                key={code}
+                className={`tab ${selectedMasterMonth === code ? "active" : ""}`}
+                onClick={() => setSelectedMasterMonth(code)}
+              >
+                {getDisplayMonth(code)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="card section-card">
+          <h3 className="section-title">
+            Category-wise Support Effort (Hours)
+            {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+            {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
+            {filteredMasterData.length > 0 && (
+              <>
+                {" - "}
+                <strong>Total hours: {masterTotalHours}</strong>
               </>
             )}
-          </>
-        )}
+          </h3>
+
+          <MasterCategoryChart 
+            data={chartDataForMaster}
+            onCategoryClick={setSelectedMasterCategory}
+            selectedCategory={selectedMasterCategory}
+          />
+
+          {/* NEW: Key Insights below Master Category Chart */}
+          {sheetNotes.Master?.inferences && (
+            <div
+              className="inference-box"
+              style={{
+                marginTop: "24px",
+                padding: "18px",
+                background: "#f0f7ff",
+                borderRadius: "10px",
+                borderLeft: "5px solid #1e88e5",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)"
+              }}
+            >
+              <strong style={{ color: "#1565c0", fontSize: "1.1em" }}>
+                Key Insights from Category Distribution
+              </strong>
+              <p
+                style={{
+                  margin: "12px 0 0",
+                  whiteSpace: "pre-line",
+                  lineHeight: "1.8",
+                  color: "#333"
+                }}
+              >
+                {sheetNotes.Master.inferences}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="card section-card">
+          <h3 className="section-title">
+            Detailed Activity Register (Master)
+            {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
+            {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
+          </h3>
+          <Table data={tableDataForMaster} />
+        </div>
+      </>
+    )}
+  </>
+)}
       </div>
     </div>
   );
@@ -430,12 +599,10 @@ function computeKpisFromSummary(summary) {
     return defaults;
   }
 
-  // Find the row where Month is 'Grand Total'
   const grandTotalRow = summary.data.find(
     (row) => String(row["Month"] || "").trim() === "Grand Total"
   );
 
-  // Robust number parser (handles strings, '-', numbers, etc.)
   const parseNum = (v) => {
     if (typeof v === "number" && !isNaN(v)) return v;
     if (v === '-' || v === '' || v == null) return 0;
@@ -448,7 +615,6 @@ function computeKpisFromSummary(summary) {
   };
 
   if (!grandTotalRow) {
-    // Fallback: sum all monthly rows (excluding any potential Grand Total row)
     return summary.data.reduce((acc, row) => {
       if (String(row["Month"] || "").trim() === "Grand Total") return acc;
       acc.cr += parseNum(row["CR / Enhancement"]);
@@ -460,7 +626,6 @@ function computeKpisFromSummary(summary) {
     }, { totalSupport: 0, maintenance: 0, bugs: 0, rd: 0, cr: 0 });
   }
 
-  // Extract directly from the Grand Total row
   return {
     totalSupport: parseNum(grandTotalRow["Grand Total"]),
     maintenance: parseNum(grandTotalRow["Regular Maintenance"]),
