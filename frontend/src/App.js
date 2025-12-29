@@ -470,7 +470,7 @@ const [inferenceDraft, setInferenceDraft] = useState("");
               }}
             >
               <strong style={{ color: "#1565c0", fontSize: "1.1em" }}>
-                Key Insights from this Chart
+                Inferences
               </strong>
               <p
                 style={{
@@ -557,7 +557,7 @@ const [inferenceDraft, setInferenceDraft] = useState("");
               }}
             >
               <strong style={{ color: "#1565c0", fontSize: "1.1em" }}>
-                Key Insights from Category Distribution
+                Inferences
               </strong>
               <p
                 style={{
