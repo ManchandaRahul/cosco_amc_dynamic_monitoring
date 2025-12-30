@@ -112,12 +112,20 @@
                     "Grand Total": 86
                 },
                 {
+                    "Month": "Dec 25",
+                    "CR / Enhancement": "-",
+                    "Issue / Bug": 12,
+                    "R&D": "-",
+                    "Regular Maintenance": 18,
+                    "Grand Total": 30
+                },
+                {
                     "Month": "Grand Total",
                     "CR / Enhancement": 147.5,
-                    "Issue / Bug": 80.5,
+                    "Issue / Bug": 92.5,
                     "R&D": 81.5,
-                    "Regular Maintenance": 218,
-                    "Grand Total": 527.5
+                    "Regular Maintenance": 236,
+                    "Grand Total": 557.5
                 }
             ]
         },
@@ -1677,7 +1685,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "Daily Monitoring",
                     "Notes": "Monitoring – COSCO\r\n1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive.\r\n2.No duplicate records were identified, and no items required manual intervention.",
                     "Month": "Dec-25",
@@ -1685,7 +1693,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1027 - Production Support Activities - November",
                     "Notes": "Performed Production monitoring of the Receipt Generation process",
                     "Month": "Dec-25",
@@ -1693,7 +1701,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "Daily Monitoring",
                     "Notes": "Monitoring – COSCO\r\n1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive.\r\n2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1701,7 +1709,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "Daily Monitoring",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1709,7 +1717,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "Daily Monitoring",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1717,7 +1725,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Performed Production monitoring of Receipt Generation Process.",
                     "Month": "Dec-25",
@@ -1725,7 +1733,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO\r\n1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive.\r\n2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1733,7 +1741,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1741,7 +1749,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1749,7 +1757,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1757,7 +1765,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Issue / Bug",
                     "Task": "1029 - Status As N Not Transferred To Noc Archived Data",
                     "Notes": "implemented the code need to test on it",
                     "Month": "Dec-25",
@@ -1765,7 +1773,7 @@
                     "Hours": 2
                 },
                 {
-                    "Category": "-",
+                    "Category": "Issue / Bug",
                     "Task": "1029 - Status As N Not Transferred To Noc Archived Data",
                     "Notes": "Connected with Office Script developer and got the script for him for NOC 'N' issue and tested the flow and deployed it in Cosco Dev. Need to verify the outputs.",
                     "Month": "Dec-25",
@@ -1773,7 +1781,7 @@
                     "Hours": 6
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1781,7 +1789,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1789,7 +1797,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1797,7 +1805,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1805,7 +1813,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1813,7 +1821,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Issue / Bug",
                     "Task": "1029 - Status As N Not Transferred To Noc Archived Data",
                     "Notes": "Office script  - Test with multiple times and Deployed",
                     "Month": "Dec-25",
@@ -1821,7 +1829,7 @@
                     "Hours": 4
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1829,7 +1837,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1837,7 +1845,7 @@
                     "Hours": 1
                 },
                 {
-                    "Category": "-",
+                    "Category": "Regular Maintenance",
                     "Task": "1028 - Production Support Activities - December",
                     "Notes": "Monitoring – COSCO 1.Verified the Move-to-Archive Office Script scheduled run and confirmed that multiple records were successfully moved from Transact to Archive. 2.No duplicate records were identified, and no items required manual processing.",
                     "Month": "Dec-25",
@@ -1853,5 +1861,5 @@
             }
         }
     },
-    "lastUpdated": "2025-12-30T04:46:08.012Z"
+    "lastUpdated": "2025-12-30T10:06:46.242Z"
 }
