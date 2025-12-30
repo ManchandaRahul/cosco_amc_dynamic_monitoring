@@ -164,7 +164,7 @@ const [inferenceDraft, setInferenceDraft] = useState("");
   const summary = sheets?.Summary;
   const kpis = computeKpisFromSummary(summary);
 
-  const monthOrder = ["May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25"];
+  const monthOrder = ["May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25"];
 
   const monthDisplay = {
     "May-25": "May 2025",
@@ -173,7 +173,8 @@ const [inferenceDraft, setInferenceDraft] = useState("");
     "Aug-25": "August 2025",
     "Sep-25": "September 2025",
     "Oct-25": "October 2025",
-    "Nov-25": "November 2025"
+    "Nov-25": "November 2025",
+    "Dec-25": "December 2025"
   };
 
   const uniqueMonths = Array.from(
