@@ -74,13 +74,16 @@ export default function Charts({ data = [], activeSheet }) {
             }}
           />
           
-          <YAxis
-            label={{
-              value: yLabel,
-              angle: -90,
-              position: "insideLeft"
-            }}
-          />
+<YAxis
+      label={{
+        value: yLabel,
+        angle: -90,
+        position: "left",
+        offset: 12,                  // ← Smaller offset: 10–16 works best
+        style: { fontWeight: 600 }   // Optional: make it bolder
+      }}
+      tick={{ dx: -4 }}              // Optional: pull tick numbers slightly inward
+    />
           
           <Tooltip formatter={(v) => `${v} hrs`} />
 
