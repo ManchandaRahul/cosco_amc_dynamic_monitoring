@@ -239,37 +239,43 @@ const [inferenceDraft, setInferenceDraft] = useState("");
 
   return (
     <div className="app-shell">
-      <div className="app-header">
-        <div className="header-inner">
-          <div>
-            <h1 id="cosco-title" style={{ cursor: "pointer", userSelect: "none" }}>
-              COSCO AMC Monitoring
-            </h1>
-          </div>
-          <div className="header-meta">
-            <span>Report Period: </span>
-            <strong>May – Nov 2025</strong>
-            {formatLastUpdated && (
-              <span style={{ marginLeft: "20px", fontSize: "0.9em", opacity: 0.8 }}>
-                Last updated: {formatLastUpdated}
-              </span>
-            )}
-            {isAdminMode && (
-              <button
-                className="admin-panel-btn"
-                onClick={() => {
-                  setShowUpdateModal(true);
-                  setIsAuthenticatedForUpload(false);
-                  setAuthError("");
-                  setPasswordInput("");
-                }}
-              >
-                Admin Panel
-              </button>
-            )}
-          </div>
-        </div>
+<div className="app-header">
+  <div className="header-inner horizontal-header">
+    {/* Left: Title (smaller to match reference) */}
+    <h1 id="cosco-title" style={{ margin: 0, fontSize: '36px' }}>
+      AMC Monitoring
+    </h1>
+
+    {/* Center: Logo */}
+    <img src="/cosco.png" alt="COSCO Shipping" className="cosco-logo centered-logo" />
+
+    {/* Right: Report info + Admin button */}
+    <div className="header-meta">
+      <div style={{ textAlign: 'right' }}>
+        <span>Report Period: </span>
+        <strong>May – Dec 2025</strong>
+        {formatLastUpdated && (
+          <span style={{ display: 'block', marginTop: '4px', fontSize: '0.9em', opacity: 0.8 }}>
+            Last updated: {formatLastUpdated}
+          </span>
+        )}
       </div>
+    {isAdminMode && (
+  <button
+    className="admin-panel-btn"
+    onClick={() => {
+      setShowUpdateModal(true);
+      setIsAuthenticatedForUpload(false);
+      setAuthError("");
+      setPasswordInput("");
+    }}
+  >
+    Admin Panel
+  </button>
+)}
+    </div>
+  </div>
+</div>
 
       {showUpdateModal && (
         <div className="modal-overlay" onClick={() => setShowUpdateModal(false)}>
