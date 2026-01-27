@@ -4,8 +4,6 @@ import Charts from "./components/Charts";
 import Table from "./components/Table";
 import MasterCategoryChart from "./components/MasterCategoryChart";
 import "./index.css";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 
 function App() {
