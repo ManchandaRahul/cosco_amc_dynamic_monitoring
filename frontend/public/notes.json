@@ -1,9 +1,9 @@
 {
   "Summary": {
-    "inferences": "• Total support effort peaked in September 2025 \n• Regular Maintenance consistently accounts for ~40-50% of monthly effort.\n• The highest hours were recorded for issue/bug fixes in November 2025, R&D activities in October 2025, and regular maintenance in September 2025."
+    "inferences": "• The total support hours from May'25-Jan'26 is 590.5, where the highest hours were in September(147 hrs) with the most hours(67 hrs) being used in CR/ Enhancement and the other hours(34 hrs) being utilised in R&D followed by the second highest in the month of October(108 hours) with the most hours(47.5 hrs) being used in R&D and the other hours(36.5) being used in CR/Enhancement. October amounted for reduced hours since the fixes were applied. \n • January amounted for the least hours(25 hours).\n • The highest hours for Issues/Bug was in Nov(43 hrs)\n • The Highest Effort Hours(67 hours) for CR/Enhancement was in the month of Sept."
   },
   "cbs changes": {
-    "inferences": "• CBS-related changes were concentrated in July and October.\n• Enhancement requests dominate over bug fixes in CBS scope.\n• No CBS activity recorded in May ,November and December."
+    "inferences": "•  CBS-related changes were highest in the Month of September(67 hours), followed with the the second highest in the month of October(36.5 hours)\n• There was a 54% drop in the effort hours in October from September after the apply of the fixes.\n• No CBS activity recorded in the month of May, June ,November and December and January.\n• Regular Maintenance consumed the highest hours(255 hrs) on month on month basis"
   },
   "Master": {
     "inferences": "• Regular Maintenance is the largest category, making up ~45% of total effort.\n• Issue/Bug resolution shows seasonal spikes."

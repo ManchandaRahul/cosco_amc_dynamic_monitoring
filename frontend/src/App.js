@@ -139,7 +139,7 @@ function App() {
   const summary = sheets?.Summary;
   const kpis = computeKpisFromSummary(summary);
 
-  const monthOrder = ["May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25"];
+  const monthOrder = ["May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25","Jan-26"];
 
   const monthDisplay = {
     "May-25": "May 2025",
@@ -149,7 +149,8 @@ function App() {
     "Sep-25": "September 2025",
     "Oct-25": "October 2025",
     "Nov-25": "November 2025",
-    "Dec-25": "December 2025"
+    "Dec-25": "December 2025",
+    "Jan-26": "January 2026"
   };
 
   const uniqueMonths = Array.from(
@@ -228,7 +229,7 @@ function App() {
           <div className="header-meta">
             <div style={{ textAlign: 'right' }}>
               <span>Report Period: </span>
-              <strong>May – Dec 2025</strong>
+              <strong>May – Jan 2026</strong>
               {formatLastUpdated && (
                 <span style={{ display: 'block', marginTop: '4px', fontSize: '0.9em', opacity: 0.8 }}>
                   Last updated: {formatLastUpdated}
@@ -388,9 +389,11 @@ function App() {
                 setSelectedMasterCategory("All");
               }}
             >
-              {Object.keys(sheets).map((sheet) => (
-                <option key={sheet} value={sheet}>{sheet}</option>
-              ))}
+{Object.keys(sheets)
+  .filter(sheet => !/^Sheet\d+$/i.test(sheet))   // 👈 removes Sheet1/2/3
+  .map((sheet) => (
+    <option key={sheet} value={sheet}>{sheet}</option>
+))}
             </select>
           </div>          
         )}
