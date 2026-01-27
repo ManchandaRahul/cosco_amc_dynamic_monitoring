@@ -4,6 +4,9 @@ import Charts from "./components/Charts";
 import Table from "./components/Table";
 import MasterCategoryChart from "./components/MasterCategoryChart";
 import "./index.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 
 function App() {
   const [sheets, setSheets] = useState(null);
@@ -169,6 +172,40 @@ function App() {
   const tableDataForMaster = selectedMasterCategory === "All"
     ? filteredMasterData
     : filteredMasterData.filter(row => row["Category"] === selectedMasterCategory);
+
+  const downloadMasterExcel = () => {
+  if (!tableDataForMaster || tableDataForMaster.length === 0) {
+    alert("No data available to download.");
+    return;
+  }
+
+  // Convert JSON → worksheet
+  const worksheet = XLSX.utils.json_to_sheet(tableDataForMaster);
+
+  // Create workbook
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Master");
+
+  // Generate Excel file
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array"
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+
+  // File name
+  const monthLabel =
+    selectedMasterMonth === "All"
+      ? "All_Months"
+      : getDisplayMonth(selectedMasterMonth).replace(" ", "_");
+
+  saveAs(blob, `Master_Data_${monthLabel}.xlsx`);
+};
+
 
   const FIXED_CATEGORY_ORDER = [
     "Regular Maintenance",
@@ -549,8 +586,16 @@ function App() {
                 <div className="card section-card">
                   <h3 className="section-title">
                     Detailed Activity Register (Master)
+                    
                     {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
                     {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
+                        <button
+      className="tab"
+      style={{ background: "#1976d2", color: "white" }}
+      onClick={downloadMasterExcel}
+    >
+      Download Excel
+    </button>
                   </h3>
                   <Table data={tableDataForMaster} />
                 </div>
