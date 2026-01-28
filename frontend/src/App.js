@@ -239,9 +239,10 @@ const downloadMasterExcel = async () => {
     return indexA - indexB;
   });
 
-  const masterTotalHours = filteredMasterData
-    .reduce((sum, row) => sum + getHoursValue(row), 0)
-    .toFixed(1);
+  const masterTotalHours = tableDataForMaster
+  .reduce((sum, row) => sum + getHoursValue(row), 0)
+  .toFixed(1);
+
 
   const formatLastUpdated = lastUpdated
     ? lastUpdated.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -586,11 +587,10 @@ const downloadMasterExcel = async () => {
                     
                     {selectedMasterMonth !== "All" && ` - ${getDisplayMonth(selectedMasterMonth)}`}
                     {selectedMasterCategory !== "All" && ` - ${selectedMasterCategory}`}
-                        <button
-      className="tab"
-      style={{ background: "#1976d2", color: "white" }}
-      onClick={downloadMasterExcel}
-    >
+<button
+  className="download-btn"
+  onClick={downloadMasterExcel}
+>
       Download Excel
     </button>
                   </h3>

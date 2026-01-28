@@ -19,6 +19,24 @@ body {
   margin-bottom: 20px;
 }
 
+.download-btn {
+  margin-left: 16px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.download-btn:hover {
+  background: #1565c0;
+}
+
+
 .header-inner {
   max-width: 1200px;
   margin: auto;
