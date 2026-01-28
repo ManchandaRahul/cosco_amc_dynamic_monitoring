@@ -31,69 +31,65 @@ function App() {
   const CORRECT_PASSWORD = "cosco2025";
 
   // Load data + notes
-  useEffect(() => {
-    const loadData = async () => {
-      let dataLoaded = false;
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const res = await fetch("/latest-report.json", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const savedData = localStorage.getItem("coscoDashboardData");
-      const savedTimestamp = localStorage.getItem("coscoLastUpdated");
-      const savedNotes = localStorage.getItem("coscoNotesData");
+      const data = await res.json();
 
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          setSheets(parsed);
-          setActiveSheet(Object.keys(parsed)[0]);
-          setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+      setSheets(data);
+      setActiveSheet(Object.keys(data)[0]);
 
-          if (savedNotes) {
-            setSheetNotes(JSON.parse(savedNotes));
-          }
+      const timestamp = data.lastUpdated || new Date().toISOString();
+      setLastUpdated(new Date(timestamp));
 
-          dataLoaded = true;
-        } catch (e) {
-          console.error("Corrupted localStorage — clearing and falling back");
-          localStorage.removeItem("coscoDashboardData");
-          localStorage.removeItem("coscoLastUpdated");
-          localStorage.removeItem("coscoNotesData");
+      // ✅ FIXED
+      localStorage.setItem("coscoDashboardData", JSON.stringify(data));
+      localStorage.setItem("coscoLastUpdated", timestamp);
+
+      try {
+        const notesRes = await fetch("/notes.json", { cache: "no-store" });
+        if (notesRes.ok) {
+          const notes = await notesRes.json();
+          setSheetNotes(notes);
+          localStorage.setItem("coscoNotesData", JSON.stringify(notes));
         }
+      } catch {}
+
+      return;
+    } catch (err) {
+      console.warn("JSON load failed, falling back to localStorage", err);
+    }
+
+    const savedData = localStorage.getItem("coscoDashboardData");
+    const savedTimestamp = localStorage.getItem("coscoLastUpdated");
+    const savedNotes = localStorage.getItem("coscoNotesData");
+
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setSheets(parsed);
+        setActiveSheet(Object.keys(parsed)[0]);
+        setLastUpdated(savedTimestamp ? new Date(savedTimestamp) : null);
+
+        if (savedNotes) setSheetNotes(JSON.parse(savedNotes));
+        return;
+      } catch {
+        localStorage.clear();
       }
+    }
 
-      if (!dataLoaded) {
-        try {
-          const res = await fetch("/latest-report.json");
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
+    // ✅ FINAL SAFETY NET
+    setSheets({});
+    setActiveSheet(null);
+  };
 
-          setSheets(data.sheets);
-          setActiveSheet(Object.keys(data.sheets)[0]);
-          const timestamp = data.lastUpdated || new Date().toISOString();
-          setLastUpdated(new Date(timestamp));
+  loadData();
+}, []);
 
-          localStorage.setItem("coscoDashboardData", JSON.stringify(data.sheets));
-          localStorage.setItem("coscoLastUpdated", timestamp);
 
-          // Load notes.json
-          let notesData = {};
-          try {
-            const notesRes = await fetch("/notes.json");
-            if (notesRes.ok) {
-              notesData = await notesRes.json();
-              setSheetNotes(notesData);
-              localStorage.setItem("coscoNotesData", JSON.stringify(notesData));
-            }
-          } catch (err) {
-            console.warn("notes.json not found or failed to load");
-          }
-
-        } catch (err) {
-          console.error("Failed to load latest-report.json:", err);
-        }
-      }
-    };
-
-    loadData();
-  }, []);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -106,37 +102,50 @@ function App() {
     }
   };
 
-  const uploadExcel = async (file) => {
-    if (!file) return;
+const uploadExcel = async (file) => {
+  if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
+  const formData = new FormData();
+  formData.append("file", file);
 
-    try {
-      const res = await fetch("http://localhost:4000/upload-excel", {
-        method: "POST",
-        body: formData,
-      });
+  try {
+    const res = await fetch("http://localhost:4000/upload-excel", {
+      method: "POST",
+      body: formData,
+    });
 
-      if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) throw new Error("Upload failed");
 
-      const json = await res.json();
-      setSheets(json.sheets);
-      setActiveSheet(Object.keys(json.sheets)[0]);
-      setSelectedMasterMonth("All");
-      setSelectedMasterCategory("All");
+    const json = await res.json();
 
-      localStorage.setItem("coscoDashboardData", JSON.stringify(json.sheets));
-      const now = new Date().toISOString();
-      localStorage.setItem("coscoLastUpdated", now);
-      setLastUpdated(new Date(now));
+    // ✅ ALWAYS keep sheets shape consistent
+    setSheets(json.sheets);
+    setActiveSheet(Object.keys(json.sheets)[0]);
 
-      setShowUpdateModal(false);
-      setIsAuthenticatedForUpload(false);
-    } catch (err) {
-      setAuthError("Upload failed — run local backend or update JSON file.");
-    }
-  };
+    setSelectedMasterMonth("All");
+    setSelectedMasterCategory("All");
+
+    // ✅ Store SAME structure as used everywhere else
+    localStorage.setItem(
+      "coscoDashboardData",
+      JSON.stringify(json.sheets)
+    );
+
+    const now = new Date().toISOString();
+    localStorage.setItem("coscoLastUpdated", now);
+    setLastUpdated(new Date(now));
+
+    setShowUpdateModal(false);
+    setIsAuthenticatedForUpload(false);
+    setAuthError("");
+  } catch (err) {
+    console.error(err);
+    setAuthError(
+      "Upload failed — run local backend or update latest-report.json."
+    );
+  }
+};
+
 
   const summary = sheets?.Summary;
   const kpis = computeKpisFromSummary(summary);
